@@ -4,50 +4,27 @@
   import Counter from './lib/Counter.svelte'
   import {onMount} from 'svelte';
 
-  export let add;
+  // WE need an interface that looks like this:
+  // - top left point (complex/cartesian)
+  // - bottom right point (complex/cartesian)
+  // - viewport height (pixels)
+  // - viewport width (pixels)
+  // The output will be a grid of boolean values.
+  // Maybe encode it inside a byte array?
+
+  export let generate_mandelbrot;
   onMount(() => {
-    console.log(add(1n, 1n));
+    const result = generate_mandelbrot(0, 0, 0, 0, 0, 0);
+    const element = document.querySelector('#fractal-canvas');
+    const context = element.getContext('2d');
+    context.fillStyle = 'rgb(200, 0, 0)';
+    context.fillRect(10, 10, 50, 50);
   });
 </script>
 
 <main>
-  <div>
-    <a href="https://vite.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
+  <canvas id="fractal-canvas" height="1000" width="1000"></canvas>
 </main>
 
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
 </style>

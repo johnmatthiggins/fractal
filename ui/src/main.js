@@ -1,5 +1,5 @@
 import { mount } from 'svelte'
-import { add } from '../../mandelbrot/pkg/mandelbrot_bg.wasm';
+import { generate_mandelbrot } from '../../mandelbrot/pkg/mandelbrot_bg.wasm';
 import './app.css'
 import App from './App.svelte'
 
@@ -8,7 +8,7 @@ const initialize = async () => {
   app = mount(App, {
     target: document.getElementById('app'),
     props: {
-      add,
+      generate_mandelbrot,
     },
   });
 };
