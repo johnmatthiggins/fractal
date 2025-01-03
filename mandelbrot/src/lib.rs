@@ -1,8 +1,13 @@
-use js_sys::Int8Array;
+use js_sys::Int16Array;
 use wasm_bindgen::prelude::*;
 
-const MAX_ITERATIONS: i64 = 1000;
-const PALETTE &'static [u8] = &[0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200];
+const MAX_ITERATIONS: usize = 1000;
+const PALETTE: &'static [u8] = &[0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200];
+
+struct Point {
+    x: f64,
+    y: f64,
+}
 
 #[wasm_bindgen]
 pub fn add(left: u64, right: u64) -> u64 {
@@ -17,19 +22,51 @@ pub fn generate_mandelbrot(
     bottom_right_y: f64,
     viewport_height: u32,
     viewport_width: u32,
-) -> Int8Array {
-    let out: Vec<i8> = (0..10).collect();
-    Int8Array::from(&out[..])
+) -> Int16Array {
+    let mut output: Vec<i16> = vec![0; (viewport_width * viewport_height).try_into().unwrap()];
+    let top_left = Point {
+        x: top_left_x,
+        y: top_left_y,
+    };
+    let bottom_right = Point {
+        x: bottom_right_x,
+        y: bottom_right_y,
+    };
+    fill_screen(&mut output, viewport_width as usize, viewport_height as usize, top_left, bottom_right);
+    Int16Array::from(&output[..])
 }
 
-pub fn build_pixel(x0: f64, y0: f64) -> u8 {
-    let mut x = 0;
-    let mut y = 0;
+fn fill_screen(
+    screen_buffer: &mut Vec<i16>, 
+    width: usize, 
+    height: usize, 
+    top_left: Point, 
+    bottom_right: Point,
+) {
+    let section_width: f64 = bottom_right.x - top_left.x;
+    let section_height: f64 = bottom_right.y - top_left.y;
 
-    let mut iteration = 0;
-    while x * x + y * y <= 4 && iteration < MAX_ITERATIONS {
-        let xtmp = x * x - y * y + x0;
-        y = 2 * x * y + y0;
+    let mut i: usize = 0;
+    while i < width * height {
+        let x: usize =  i % width;
+        let y: usize = i / height;
+        let adjusted_x: f64 = (x as f64 / width as f64) * section_width;
+        let adjusted_y: f64 = (y as f64 / height as f64) * section_height;
+        let new_pixel = build_pixel(adjusted_x, adjusted_y);
+        screen_buffer[i] = new_pixel as i16;
+
+        i += 1;
+    }
+}
+
+fn build_pixel(x0: f64, y0: f64) -> u8 {
+    let mut x: f64 = 0.0;
+    let mut y: f64 = 0.0;
+
+    let mut iteration: usize = 0;
+    while x * x + y * y <= 4.0 && iteration < MAX_ITERATIONS {
+        let xtmp: f64 = x * x - y * y + x0;
+        y = 2.0 * x * y + y0;
         x = xtmp;
 
         iteration = iteration + 1;
