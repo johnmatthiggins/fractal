@@ -24,9 +24,9 @@ pub fn generate_mandelbrot(
     viewport_height: u32,
     viewport_width: u32,
 ) -> Int16Array {
-    console::log_1(&"Starting function".into());
+    // console::log_1(&"Starting function".into());
     let mut output: Vec<i16> = vec![0; (viewport_width * viewport_height).try_into().unwrap()];
-    console::log_1(&"Got past vector initialization".into());
+    // console::log_1(&"Got past vector initialization".into());
     let top_left = Point {
         x: top_left_x,
         y: top_left_y,
@@ -35,7 +35,7 @@ pub fn generate_mandelbrot(
         x: bottom_right_x,
         y: bottom_right_y,
     };
-    console::log_1(&"Got past initialization of structs".into());
+    // console::log_1(&"Got past initialization of structs".into());
     fill_screen(&mut output, viewport_width as usize, viewport_height as usize, top_left, bottom_right);
     Int16Array::from(&output[..])
 }
@@ -47,20 +47,20 @@ fn fill_screen(
     top_left: Point, 
     bottom_right: Point,
 ) {
-    console::log_1(&"Successfully passed a vector...".into());
+    // console::log_1(&"Successfully passed a vector...".into());
     let section_width: f64 = bottom_right.x - top_left.x;
     let section_height: f64 = bottom_right.y - top_left.y;
 
     let mut i: usize = 0;
     while i < width * height {
-        console::log_1(&i.to_string().into());
+        // console::log_1(&i.to_string().into());
         let x: usize =  i % width;
         let y: usize = i / height;
         let adjusted_x: f64 = (x as f64 / width as f64) * section_width;
         let adjusted_y: f64 = (y as f64 / height as f64) * section_height;
-        console::log_1(&"Going into build_pixel function".into());
+        // console::log_1(&"Going into build_pixel function".into());
         let new_pixel = build_pixel(adjusted_x, adjusted_y, width);
-        console::log_1(&"Passed build_pixel function".into());
+        // console::log_1(&"Passed build_pixel function".into());
         screen_buffer[i] = new_pixel as i16;
 
         i += 1;
@@ -73,7 +73,7 @@ fn build_pixel(x0: f64, y0: f64, width: usize) -> u8 {
 
     let mut iteration: usize = 0;
     while x * x + y * y <= 4.0 && iteration < MAX_ITERATIONS {
-        console::log_1(&iteration.to_string().into());
+        // console::log_1(&iteration.to_string().into());
         let xtmp: f64 = x * x - y * y + x0;
         y = 2.0 * x * y + y0;
         x = xtmp;
@@ -83,7 +83,7 @@ fn build_pixel(x0: f64, y0: f64, width: usize) -> u8 {
     // let color: u8 = (u8)iteration;
     // let index = x0 * (width as f64) + y0;
 
-    PALETTE[iteration]
+    PALETTE[iteration % PALETTE.len()]
 }
 
 #[cfg(test)]
