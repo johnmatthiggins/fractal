@@ -12,31 +12,32 @@
   // - viewport width (pixels)
   // The output will be a grid of boolean values.
   // Maybe encode it inside a byte array?
+  export const height = 2000;
+  export const width = 2000;
 
-  // export let generate_mandelbrot;
   const transformByteToShade = (byte) => {
-    return Math.floor(byte * (16777216 / 200));
+    const b = Math.floor(byte * (255 / 200)).toString(16).padStart('0', 2);
+    return `#${b}${b}${b}`;
   };
   onMount(() => {
-    const result = generate_mandelbrot(-2, 0, 1, -0.75, 100, 100);
+    const result = generate_mandelbrot(-2, 1.5, 1, -1.5, height, width);
     const element = document.querySelector('#fractal-canvas');
     const context = element.getContext('2d');
 
-    for (let i = 0; i < 100; i += 1) {
-      for (let j = 0; j < 100; j += 1) {
+    for (let i = 0; i < height; i += 1) {
+      for (let j = 0; j < width; j += 1) {
         const colorValue = transformByteToShade(
-          result[j + (i * 100)]
+          result[j + (i * width)]
         );
-        const colorHex = "#" + colorValue.toString(16).padStart('0', 6);
-        context.fillStyle = colorHex;
-        context.fillRect(i, j, 1, 1);
+        context.fillStyle = colorValue;
+        context.fillRect(height - i, j, 1, 1);
       }
     }
   });
 </script>
 
 <main>
-  <canvas id="fractal-canvas" height="100" width="100"></canvas>
+  <canvas id="fractal-canvas" style="width: 1000px;height: 1000px;" height={height} width={width}></canvas>
 </main>
 
 <style>
