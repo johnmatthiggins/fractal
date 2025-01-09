@@ -48,8 +48,8 @@ fn fill_screen(
     bottom_right: Point,
 ) {
     // console::log_1(&"Successfully passed a vector...".into());
-    let section_width: f64 = bottom_right.x - top_left.x;
-    let section_height: f64 = bottom_right.y - top_left.y;
+    let section_width: f64 = (top_left.x - bottom_right.x).abs();
+    let section_height: f64 = (top_left.y - bottom_right.y).abs();
 
     let mut i: usize = 0;
     while i < width * height {

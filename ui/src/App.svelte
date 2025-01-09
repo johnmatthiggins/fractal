@@ -21,9 +21,9 @@
   };
 
   const defaultTopLeftX = -2;
-  const defaultTopLeftY = 1.5;
-  const defaultBottomRightX = 1;
-  const defaultBottomRightY = -1.5;
+  const defaultTopLeftY = -3;
+  const defaultBottomRightX = -1;
+  const defaultBottomRightY = -4;
 
   let topLeftX = $state(defaultTopLeftX);
   let topLeftY = $state(defaultTopLeftY);
@@ -70,7 +70,7 @@
 
 <main>
   <canvas id="fractal-canvas" style="width: 500px;height: 500px;" height={height} width={width}></canvas>
-  <input type="range" on:change={handleInputChange} value={zoomRange} max={1} step={0.1} min={0.1}>
+  <input type="range" onchange={handleInputChange} value={zoomRange} max={1} step={0.1} min={0.1}>
 </main>
 
 <style>
