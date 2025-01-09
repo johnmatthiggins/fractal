@@ -12,15 +12,47 @@
   // - viewport width (pixels)
   // The output will be a grid of boolean values.
   // Maybe encode it inside a byte array?
-  export const height = 2000;
-  export const width = 2000;
+  export const height = 500;
+  export const width = 500;
 
   const transformByteToShade = (byte) => {
     const b = Math.floor(byte * (255 / 200)).toString(16).padStart('0', 2);
     return `#${b}${b}${b}`;
   };
-  onMount(() => {
-    const result = generate_mandelbrot(-2, 1.5, 1, -1.5, height, width);
+
+  const defaultTopLeftX = -2;
+  const defaultTopLeftY = 1.5;
+  const defaultBottomRightX = 1;
+  const defaultBottomRightY = -1.5;
+
+  let topLeftX = $state(defaultTopLeftX);
+  let topLeftY = $state(defaultTopLeftY);
+  let bottomRightX = $state(defaultBottomRightX);
+  let bottomRightY = $state(defaultBottomRightY);
+
+  let zoomRange = $state(1);
+
+  const handleInputChange = (event) => {
+    const newZoom = Number(event.target.value)
+    zoomRange = newZoom;
+    zoom(newZoom);
+  };
+
+  const zoom = (magnitude) => {
+    topLeftX = defaultTopLeftX * magnitude;
+    topLeftY = defaultTopLeftY * magnitude;
+    bottomRightX = defaultBottomRightX * magnitude;
+    bottomRightY = defaultBottomRightY * magnitude;
+  };
+  $effect(() => {
+    const result = generate_mandelbrot(
+      topLeftX,
+      topLeftY,
+      bottomRightX,
+      bottomRightY,
+      height,
+      width
+    );
     const element = document.querySelector('#fractal-canvas');
     const context = element.getContext('2d');
 
@@ -37,7 +69,8 @@
 </script>
 
 <main>
-  <canvas id="fractal-canvas" style="width: 1000px;height: 1000px;" height={height} width={width}></canvas>
+  <canvas id="fractal-canvas" style="width: 500px;height: 500px;" height={height} width={width}></canvas>
+  <input type="range" on:change={handleInputChange} value={zoomRange} max={1} step={0.1} min={0.1}>
 </main>
 
 <style>
