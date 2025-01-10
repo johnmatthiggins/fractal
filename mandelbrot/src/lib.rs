@@ -2,8 +2,8 @@ use js_sys::Int16Array;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
-const MAX_ITERATIONS: usize = 1000;
-const PALETTE: &'static [u8] = &[0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200];
+const MAX_ITERATIONS: usize = 100;
+const PALETTE: &'static [u8] = &[0, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120];
 
 struct Point {
     x: f64,
@@ -68,20 +68,21 @@ fn fill_screen(
 }
 
 fn build_pixel(x0: f64, y0: f64, width: usize) -> u8 {
-    let mut x: f64 = 0.0;
-    let mut y: f64 = 0.0;
+    let l2_norm = (x0.abs().powf(2.0) + y0.abs().powf(2.0)).sqrt();
+    if l2_norm > 2.0 {
+        return 0
+    }
+    let mut x2: f64 = 0.0;
+    let mut y2: f64 = 0.0;
 
     let mut iteration: usize = 0;
-    while x * x + y * y <= 4.0 && iteration < MAX_ITERATIONS {
-        // console::log_1(&iteration.to_string().into());
-        let xtmp: f64 = x * x - y * y + x0;
-        y = 2.0 * x * y + y0;
-        x = xtmp;
+    while x2 * x2 + y2 * y2 <= 4.0 && iteration < MAX_ITERATIONS {
+        let xtmp: f64 = (x2 + y2) * (x2 - y2) + x0;
+        y2 = 2.0 * x2 * y2 + y0;
+        x2 = xtmp;
 
         iteration = iteration + 1;
     }
-    // let color: u8 = (u8)iteration;
-    // let index = x0 * (width as f64) + y0;
 
     PALETTE[iteration % PALETTE.len()]
 }
