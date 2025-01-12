@@ -49,7 +49,7 @@
   };
   $effect(() => {
     const start = +new Date();
-    const result = generate_mandelbrot(
+    const data = generate_mandelbrot(
       topLeftX,
       topLeftY,
       bottomRightX,
@@ -57,26 +57,14 @@
       height,
       width
     );
-    const end = +new Date();
+    var end = +new Date();
     console.log('TIME:', end - start);
-    const element = document.querySelector('#fractal-canvas');
-    const context = element.getContext('2d');
+    const image = new ImageData(data, width, height);
+    const canvas = document.querySelector('#fractal-canvas');
+    const context = canvas.getContext('2d');
 
-    context.fillStyle = transformByteToShade(0);
-    context.fillRect(0, 0, height, width);
-
-    for (let i = 0; i < height; i += 1) {
-      for (let j = 0; j < width; j += 1) {
-        const byte = result[j + (i * width)];
-        if (byte > 0) {
-          const colorValue = transformByteToShade(
-            result[j + (i * width)]
-          );
-          context.fillStyle = colorValue;
-          context.fillRect(height - i, j, 1, 1);
-        }
-      }
-    }
+    context.reset();
+    context.putImageData(image, 0, 0, 0, 0, height, width);
   });
 </script>
 
