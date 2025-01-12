@@ -1,4 +1,5 @@
-use js_sys::Int16Array;
+use web_sys::ImageData;
+use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -23,10 +24,8 @@ pub fn generate_mandelbrot(
     bottom_right_y: f64,
     viewport_height: u32,
     viewport_width: u32,
-) -> Int16Array {
-    // console::log_1(&"Starting function".into());
-    let mut output: Vec<i16> = vec![0; (viewport_width * viewport_height).try_into().unwrap()];
-    // console::log_1(&"Got past vector initialization".into());
+) -> ImageData {
+    let mut output: Vec<u8> = vec![0; (viewport_width * viewport_height * 4).try_into().unwrap()];
     let top_left = Point {
         x: top_left_x,
         y: top_left_y,
@@ -35,13 +34,27 @@ pub fn generate_mandelbrot(
         x: bottom_right_x,
         y: bottom_right_y,
     };
-    // console::log_1(&"Got past initialization of structs".into());
-    fill_screen(&mut output, viewport_width as usize, viewport_height as usize, top_left, bottom_right);
-    Int16Array::from(&output[..])
+    fill_screen(
+        &mut output,
+        viewport_width as usize,
+        viewport_height as usize,
+        top_left,
+        bottom_right
+    );
+    let result = ImageData::new_with_u8_clamped_array(wasm_bindgen::Clamped(output.as_slice()), viewport_width);
+
+    match result {
+        Ok(image_data) => {
+            image_data
+        },
+        Err(error) => {
+            ImageData::new_with_sw(viewport_height, viewport_width).expect("Error blah blah")
+        },
+    }
 }
 
 fn fill_screen(
-    screen_buffer: &mut Vec<i16>, 
+    screen_buffer: &mut Vec<u8>, 
     width: usize, 
     height: usize, 
     top_left: Point, 
@@ -54,14 +67,17 @@ fn fill_screen(
     let mut i: usize = 0;
     while i < width * height {
         // console::log_1(&i.to_string().into());
-        let x: usize =  i % width;
-        let y: usize = i / height;
+        let x: usize =  (i % width) * 4;
+        let y: usize = i / (height * 4);
         let adjusted_x: f64 = (x as f64 / width as f64) * section_width;
         let adjusted_y: f64 = (y as f64 / height as f64) * section_height;
         // console::log_1(&"Going into build_pixel function".into());
         let new_pixel = build_pixel(adjusted_x, adjusted_y, width);
         // console::log_1(&"Passed build_pixel function".into());
-        screen_buffer[i] = new_pixel as i16;
+        screen_buffer[i] = new_pixel as u8;
+        screen_buffer[i + 1] = new_pixel as u8;
+        screen_buffer[i + 2] = new_pixel as u8;
+        screen_buffer[i + 3] = 255;
 
         i += 1;
     }
