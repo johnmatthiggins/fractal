@@ -3,7 +3,7 @@
   import viteLogo from '/vite.svg'
   import Counter from './lib/Counter.svelte'
   import { onMount } from 'svelte';
-  import { generate_mandelbrot } from '../../mandelbrot/pkg/mandelbrot.js';
+  import { generate_mandelbrot } from '../../mandelbrot/pkg/mandelbrot_bg.js';
 
   // WE need an interface that looks like this:
   // - top left point (complex/cartesian)

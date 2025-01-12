@@ -1,5 +1,4 @@
-use web_sys::ImageData;
-use wasm_bindgen;
+use js_sys::{Uint8ClampedArray};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -24,8 +23,10 @@ pub fn generate_mandelbrot(
     bottom_right_y: f64,
     viewport_height: u32,
     viewport_width: u32,
-) -> ImageData {
+) -> Uint8ClampedArray {
+    // console::log_1(&"Starting function".into());
     let mut output: Vec<u8> = vec![0; (viewport_width * viewport_height * 4).try_into().unwrap()];
+    // console::log_1(&"Got past vector initialization".into());
     let top_left = Point {
         x: top_left_x,
         y: top_left_y,
@@ -34,6 +35,7 @@ pub fn generate_mandelbrot(
         x: bottom_right_x,
         y: bottom_right_y,
     };
+    // console::log_1(&"Got past initialization of structs".into());
     fill_screen(
         &mut output,
         viewport_width as usize,
@@ -41,16 +43,7 @@ pub fn generate_mandelbrot(
         top_left,
         bottom_right
     );
-    let result = ImageData::new_with_u8_clamped_array(wasm_bindgen::Clamped(output.as_slice()), viewport_width);
-
-    match result {
-        Ok(image_data) => {
-            image_data
-        },
-        Err(error) => {
-            ImageData::new_with_sw(viewport_height, viewport_width).expect("Error blah blah")
-        },
-    }
+    Uint8ClampedArray::from(output.as_slice())
 }
 
 fn fill_screen(
