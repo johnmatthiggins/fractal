@@ -51,9 +51,12 @@
     bottomRightY = defaultBottomRightY * magnitude;
   };
 
-  const height = $derived(() => screenHeight());
+  const preferredHeight = 1000;
+  const preferredWidth = 1440;
+
+  const height = $derived(() => preferredHeight);
   const width = $derived(() => {
-    return screenWidth();
+    return preferredWidth;
     // const ratio =
     //   Math.abs(defaultBottomRightX - defaultTopLeftX) /
     //   Math.abs(defaultBottomRightY - defaultTopLeftY);
@@ -85,22 +88,26 @@
     return {x, y}
   };
   $effect(() => {
+    const canvas = document.getElementById('fractal-canvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.querySelector('.spinner').style.display = 'block';
     const start = +new Date();
     const result = generate_mandelbrot(
-      topLeftX,
-      topLeftY,
-      bottomRightX,
-      bottomRightY,
+      topLeftX * zoomRange,
+      topLeftY * zoomRange,
+      bottomRightX * zoomRange,
+      bottomRightY * zoomRange,
       height(),
       width()
     );
+    console.log(result);
     const end = +new Date();
     console.log('TIME:', end - start);
     const element = document.querySelector('#fractal-canvas');
     const context = element.getContext('2d');
 
-    context.fillStyle = transformByteToShade(0);
-    context.fillRect(0, 0, height(), width());
+    context.reset();
 
     for (let i = 0; i < height(); i += 1) {
       for (let j = 0; j < width(); j += 1) {
@@ -114,25 +121,42 @@
         }
       }
     }
+    document.querySelector('.spinner').style.display = 'none';
   });
 </script>
 
-<main style="padding:0;margin:0;">
-  <canvas
-    id="fractal-canvas"
-    style={`width:${width()}px;height:${height()}px;`}
-    height={size()}
-    width={size()}></canvas>
-  <!-- <div -->
-  <!--   style:position="fixed" -->
-  <!--   style:left="-50vw" -->
-  <!--   style:top="-50vh" -->
-  <!--   style:width="100px" -->
-  <!--   style:height="100px" -->
-  <!--   style:border-width="1rem" -->
-  <!--   style:border-style="solid" -->
-  <!--   style:border-color="orange"></div> -->
+<main style="padding:0;margin:0;height:100%;width:100%;background-color:black;">
+  <canvas id="fractal-canvas" style={`width:100%;height:100%;`}></canvas>
+  <div
+    style:width="2rem"
+    style:max="2rem"
+    style:position="fixed"
+    style:display="flex"
+    style:left="2vw"
+    style:bottom="2vh">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="spinner">
+      <path d="M20.0001 12C20.0001 13.3811 19.6425 14.7386 18.9623 15.9405C18.282 17.1424 17.3022 18.1477 16.1182 18.8587C14.9341 19.5696 13.5862 19.9619 12.2056 19.9974C10.825 20.0328 9.45873 19.7103 8.23975 19.0612" stroke="#ff0000" stroke-width="3.55556" stroke-linecap="round"/>
+  </div>
+  <input type="range" min="0.1" max="1" step="0.1" onchange={(event) => {
+    zoomRange = Number(event.target.value);
+  }} />
 </main>
 
 <style>
+.spinner {
+  animation: 1s linear infinite spin;
+}
+
+@-moz-keyframes spin {
+    from { -moz-transform: rotate(0deg); }
+    to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
+}
 </style>
