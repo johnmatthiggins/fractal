@@ -113,11 +113,9 @@
       for (let j = 0; j < width(); j += 1) {
         const byte = result[j + (i * width())];
         if (byte > 0) {
-          const colorValue = transformByteToShade(
-            result[j + (i * width())]
-          );
+          const colorValue = transformByteToShade(byte);
           context.fillStyle = colorValue;
-          context.fillRect(height() - i, j, 1, 1);
+          context.fillRect(j, i, 1, 1);
         }
       }
     }
@@ -126,7 +124,7 @@
 </script>
 
 <main style="padding:0;margin:0;height:100%;width:100%;background-color:black;">
-  <canvas id="fractal-canvas" style={`width:100%;height:100%;`}></canvas>
+  <canvas id="fractal-canvas" style={`width:100%;height:100%;padding:0;margin:0;`}></canvas>
   <div
     style:width="2rem"
     style:max="2rem"
@@ -137,7 +135,7 @@
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="spinner">
       <path d="M20.0001 12C20.0001 13.3811 19.6425 14.7386 18.9623 15.9405C18.282 17.1424 17.3022 18.1477 16.1182 18.8587C14.9341 19.5696 13.5862 19.9619 12.2056 19.9974C10.825 20.0328 9.45873 19.7103 8.23975 19.0612" stroke="#ff0000" stroke-width="3.55556" stroke-linecap="round"/>
   </div>
-  <input type="range" min="0.1" max="1" step="0.1" onchange={(event) => {
+  <input style="position:fixed;bottom:1rem;left:1rem;" type="range" min="0.1" max="1" step="0.1" value={zoomRange} onchange={(event) => {
     zoomRange = Number(event.target.value);
   }} />
 </main>

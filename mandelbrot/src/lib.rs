@@ -68,10 +68,10 @@ fn fill_screen(
 }
 
 fn build_pixel(x0: f64, y0: f64, width: usize) -> u8 {
-    let l2_norm = (x0.abs().powf(2.0) + y0.abs().powf(2.0)).sqrt();
-    if l2_norm > 2.0 {
-        return 0
-    }
+    // let l2_norm = (x0.abs().powf(2.0) + y0.abs().powf(2.0)).sqrt();
+    // if l2_norm > 2.0 {
+    //     return 0
+    // }
     let mut x2: f64 = 0.0;
     let mut y2: f64 = 0.0;
 
