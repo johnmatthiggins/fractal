@@ -13,6 +13,14 @@
   // The output will be a grid of boolean values.
   // Maybe encode it inside a byte array?
 
+  onMount(() => {
+    const worker = new Worker("worker.js");
+    worker.onmessage = (event) => {
+      console.log(`Received message from worker: ${event.data}`);
+      worker.terminate();
+    };
+  });
+
   const screenHeight = () => {
     return window.innerHeight * 3;
   };
