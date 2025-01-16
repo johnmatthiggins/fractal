@@ -13,14 +13,6 @@
   // The output will be a grid of boolean values.
   // Maybe encode it inside a byte array?
 
-  onMount(() => {
-    const worker = new Worker("worker.js");
-    worker.onmessage = (event) => {
-      console.log(`Received message from worker: ${event.data}`);
-      worker.terminate();
-    };
-  });
-
   const screenHeight = () => {
     return window.innerHeight * 3;
   };
@@ -63,7 +55,6 @@
   const preferredWidth = 1440 * 2;
 
   const height = $derived(() => {
-    preferredHeight
 
     return window.innerHeight * 2;
   });
@@ -90,47 +81,88 @@
   };
   let canvasElement = $state(null);
   $effect(() => {
-    canvasElement = document.getElementById('fractal-canvas');
-    canvasElement.addEventListener("mouseenter", handleMouseEnter);
-    canvasElement.addEventListener("mouseleave", handleMouseLeave);
-    canvasElement.addEventListener("mousemove", handleMouseMove);
+    if (height() && width()) {
+      const worker = new Worker("worker.js");
+      worker.onerror = (event) => {
+        console.error('worker error:', event);
+      };
+      worker.onmessage = (event) => {
+        if (Array.isArray(event.data)) {
+          const pixels = event.data;
+          const element = document.querySelector('#fractal-canvas');
+          const context = element.getContext('2d');
+
+          context.reset();
+
+          for (let i = 0; i < height(); i += 1) {
+            for (let j = 0; j < width(); j += 1) {
+              const byte = pixels[j + (i * width())];
+              if (byte > 0) {
+                const colorValue = transformByteToShade(byte);
+                context.fillStyle = colorValue;
+                context.fillRect(j, i, 1, 1);
+              }
+            }
+          }
+        } else {
+          console.log(event.data);
+        }
+      };
+      const canvas = document.getElementById('fractal-canvas');
+      canvas.width = width();
+      canvas.height = height();
+      const message = {
+        topLeftX,
+        topLeftY,
+        bottomRightX,
+        bottomRightY,
+        viewportHeight: height(),
+        viewportWidth: width(),
+      };
+      console.log('going to post message...');
+      worker.postMessage(message);
+      console.log('posted message...');
+
+    }
   });
 
   const canvasPosition = () => {
     const {x, y} = canvasElement.getBoundingClientRect();
     return {x, y}
   };
-  $effect(() => {
-    const canvas = document.getElementById('fractal-canvas');
-    canvas.width = width();
-    canvas.height = height();
-    const start = +new Date();
-    const result = generate_mandelbrot(
-      topLeftX * zoomRange,
-      topLeftY * zoomRange,
-      bottomRightX * zoomRange,
-      bottomRightY * zoomRange,
-      height(),
-      width()
-    );
-    const end = +new Date();
-    console.log('TIME:', end - start);
-    const element = document.querySelector('#fractal-canvas');
-    const context = element.getContext('2d');
-
-    context.reset();
-
-    for (let i = 0; i < height(); i += 1) {
-      for (let j = 0; j < width(); j += 1) {
-        const byte = result[j + (i * width())];
-        if (byte > 0) {
-          const colorValue = transformByteToShade(byte);
-          context.fillStyle = colorValue;
-          context.fillRect(j, i, 1, 1);
-        }
-      }
-    }
-  });
+  // $effect(() => {
+  //   const canvas = document.getElementById('fractal-canvas');
+  //   canvas.width = width();
+  //   canvas.height = height();
+  //   if (width() && height()) {
+  //     const start = +new Date();
+  //     const result = generate_mandelbrot(
+  //       topLeftX * zoomRange,
+  //       topLeftY * zoomRange,
+  //       bottomRightX * zoomRange,
+  //       bottomRightY * zoomRange,
+  //       height(),
+  //       width()
+  //     );
+  //     const end = +new Date();
+  //     console.log('TIME:', end - start);
+  //     const element = document.querySelector('#fractal-canvas');
+  //     const context = element.getContext('2d');
+  //
+  //     context.reset();
+  //
+  //     for (let i = 0; i < height(); i += 1) {
+  //       for (let j = 0; j < width(); j += 1) {
+  //         const byte = result[j + (i * width())];
+  //         if (byte > 0) {
+  //           const colorValue = transformByteToShade(byte);
+  //           context.fillStyle = colorValue;
+  //           context.fillRect(j, i, 1, 1);
+  //         }
+  //       }
+  //     }
+  //   }
+  // });
 </script>
 
 <main style="padding:0;margin:0;height:100%;width:100%;background-color:black;">
