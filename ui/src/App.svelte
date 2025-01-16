@@ -79,50 +79,91 @@
     insideCanvas = false;
     console.log('entered canvas');
   };
+
+  function fourChunks(
+    viewportHeight,
+    viewportWidth
+  ) {
+    const topLeftChunk = {
+      topLeftX,
+      topLeftY,
+      bottomRightY: topLeftY + Math.abs(bottomRightY - topLeftY),
+      bottomRightX: topLeftX + Math.abs(bottomRightX - topLeftX),
+      viewportHeight: Number(viewportHeight) / 2,
+      viewportWidth: Number(viewportWidth) / 2,
+    };
+    const topRightChunk = {
+      topLeftX: topLeftX + Math.abs(bottomRightX - topLeftX),
+      topLeftY,
+      bottomRightY: topLeftY + Math.abs(bottomRightY - topLeftY),
+      bottomRightX,
+      viewportHeight: Number(viewportHeight) / 2,
+      viewportWidth: Number(viewportWidth) / 2,
+    };
+    const bottomLeftChunk = {
+      topLeftX,
+      topLeftY: topLeftY + Math.abs(bottomRightY - topLeftY),
+      bottomRightY,
+      bottomRightX: topLeftX + Math.abs(bottomRightX - topLeftX),
+      viewportHeight: viewportHeight / 2,
+      viewportWidth: viewportWidth / 2,
+    };
+    const bottomRightChunk = {
+      topLeftX: topLeftX + Math.abs(bottomRightX - topLeftX),
+      topLeftY: topLeftY + Math.abs(bottomRightY - topLeftY),
+      bottomRightY: topLeftY + Math.abs(bottomRightY - topLeftY),
+      bottomRightX,
+      viewportHeight: viewportHeight / 2,
+      viewportWidth: viewportWidth / 2,
+    };
+    return [topLeftChunk, topRightChunk, bottomLeftChunk, bottomRightChunk];
+  }
   let canvasElement = $state(null);
   $effect(() => {
     if (height() && width()) {
-      const worker = new Worker("worker.js");
-      worker.onerror = (event) => {
-        console.error('worker error:', event);
-      };
-      worker.onmessage = (event) => {
-        if (Array.isArray(event.data)) {
-          const pixels = event.data;
-          const element = document.querySelector('#fractal-canvas');
-          const context = element.getContext('2d');
-
-          context.reset();
-
-          for (let i = 0; i < height(); i += 1) {
-            for (let j = 0; j < width(); j += 1) {
-              const byte = pixels[j + (i * width())];
-              if (byte > 0) {
-                const colorValue = transformByteToShade(byte);
-                context.fillStyle = colorValue;
-                context.fillRect(j, i, 1, 1);
-              }
-            }
-          }
-        } else {
-          console.log(event.data);
+      const workers = [0, 0, 0, 0].map(() => new Worker("worker.js"));
+      workers.forEach((worker) => {
+        worker.onerror = (event) => {
+          console.error('worker error:', event);
         }
-      };
+      });
+      workers.forEach((worker) => {
+        worker.onmessage = (event) => {
+          if (Array.isArray(event.data)) {
+            const pixels = event.data;
+            console.log(pixels);
+            const element = document.querySelector('#fractal-canvas');
+            const context = element.getContext('2d');
+
+            context.reset();
+
+            // for (let i = 0; i < height(); i += 1) {
+            //   for (let j = 0; j < width(); j += 1) {
+            //     const byte = pixels[j + (i * width())];
+            //     if (byte > 0) {
+            //       const colorValue = transformByteToShade(byte);
+            //       context.fillStyle = colorValue;
+            //       context.fillRect(j, i, 1, 1);
+            //     }
+            //   }
+            // }
+          } else {
+            console.log(event.data);
+          }
+        };
+      });
       const canvas = document.getElementById('fractal-canvas');
       canvas.width = width();
       canvas.height = height();
       const message = {
-        topLeftX,
-        topLeftY,
-        bottomRightX,
-        bottomRightY,
         viewportHeight: height(),
         viewportWidth: width(),
       };
-      console.log('going to post message...');
-      worker.postMessage(message);
-      console.log('posted message...');
-
+      const messages = fourChunks(message.viewportHeight, message.viewportWidth);
+      console.log(messages);
+      for (let i = 0; i < 4; i++) {
+        workers[i].postMessage(messages[i]);
+      }
     }
   });
 
