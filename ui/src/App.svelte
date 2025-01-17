@@ -80,56 +80,52 @@
     console.log('entered canvas');
   };
 
-  function fourChunks(
+  // chunk count must be a power of 2
+  function splitChunks(
+    chunkCount,
+    topLeft,
+    bottomRight,
     viewportHeight,
     viewportWidth
   ) {
-    const topLeftChunk = {
-      topLeftX,
-      topLeftY,
-      bottomRightY: topLeftY + Math.abs(bottomRightY - topLeftY),
-      bottomRightX: topLeftX + Math.abs(bottomRightX - topLeftX),
-      viewportHeight: Number(viewportHeight) / 2,
-      viewportWidth: Number(viewportWidth) / 2,
-      viewportOffsetX: 0,
-      viewportOffsetY: 0,
-    };
-    const topRightChunk = {
-      topLeftX: topLeftX + Math.abs(bottomRightX - topLeftX),
-      topLeftY,
-      bottomRightY: topLeftY + Math.abs(bottomRightY - topLeftY),
-      bottomRightX,
-      viewportHeight: Number(viewportHeight) / 2,
-      viewportWidth: Number(viewportWidth) / 2,
-      viewportOffsetX: Number(viewportWidth) / 2,
-      viewportOffsetY: 0,
-    };
-    const bottomLeftChunk = {
-      topLeftX,
-      topLeftY: topLeftY + Math.abs(bottomRightY - topLeftY),
-      bottomRightY,
-      bottomRightX: topLeftX + Math.abs(bottomRightX - topLeftX),
-      viewportHeight: viewportHeight / 2,
-      viewportWidth: viewportWidth / 2,
-      viewportOffsetX: 0,
-      viewportOffsetY: Number(viewportHeight) / 2,
-    };
-    const bottomRightChunk = {
-      topLeftX: topLeftX + Math.abs(bottomRightX - topLeftX),
-      topLeftY: topLeftY + Math.abs(bottomRightY - topLeftY),
-      bottomRightY: topLeftY + Math.abs(bottomRightY - topLeftY),
-      bottomRightX,
-      viewportHeight: viewportHeight / 2,
-      viewportWidth: viewportWidth / 2,
-      viewportOffsetX: Number(viewportWidth) / 2,
-      viewportOffsetY: Number(viewportHeight) / 2,
-    };
-    return [topLeftChunk, topRightChunk, bottomLeftChunk, bottomRightChunk];
+    const size = Math.log2(chunkCount);
+    const squareViewportHeight = viewportHeight / size;
+    const squareViewportWidth = viewportWidth / size;
+    const squareSectionWidth = Math.abs(topLeft.x - bottomRight.x) / size;
+    const squareSectionHeight = Math.abs(topLeft.y - bottomRight.y) / size;
+
+    const squares = [];
+
+    for (let i = 0; i < size; i += 1) {
+      for (let j = 0; j < size; j += 1) {
+        const xOffset = i * squareSectionHeight;
+        const yOffset = j * squareSectionWidth;
+        const squareTopLeft = {
+          x: xOffset,
+          y: yOffset,
+        };
+        const squareBottomRight = {
+          x: squareTopLeft.x + squareSectionHeight,
+          y: squareTopLeft.y - squareSectionWidth,
+        };
+        const newSquare = {
+          topLeft: squareTopLeft,
+          bottomRight: squareBottomRight,
+          viewportHeight: squareViewportHeight,
+          viewportWidth: squareViewportWidth,
+          viewportOffsetX: squareViewportWidth * i,
+          viewportOffsetY: squareViewportHeight * j,
+        };
+        squares.push(newSquare)
+      }
+    }
+
+    return squares;
   }
   let canvasElement = $state(null);
   $effect(() => {
     if (height() && width()) {
-      const workers = [0, 0, 0, 0].map(() => new Worker("worker.js"));
+      const workers = Array(4).fill(0).map(() => new Worker("worker.js"));
       workers.forEach((worker) => {
         worker.onerror = (event) => {
           console.error('worker error:', event);
@@ -171,9 +167,15 @@
         viewportHeight: height(),
         viewportWidth: width(),
       };
-      const messages = fourChunks(message.viewportHeight, message.viewportWidth);
-      console.log(messages);
-      for (let i = 0; i < 4; i++) {
+      const CHUNK_COUNT = 4;
+      const messages = splitChunks(
+        CHUNK_COUNT,
+        { x: topLeftX, y: topLeftY },
+        { x: bottomRightX, y: bottomRightY },
+        height(),
+        width()
+      );
+      for (let i = 0; i < messages.length; i += 1) {
         workers[i].postMessage(messages[i]);
       }
     }

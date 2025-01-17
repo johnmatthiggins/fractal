@@ -2,15 +2,17 @@ const MAX_ITERATIONS = 250;
 
 onmessage = (event) => {
   const {
-    topLeftX,
-    topLeftY,
-    bottomRightX,
-    bottomRightY,
+    topLeft,
+    bottomRight,
     viewportHeight,
     viewportWidth,
     viewportOffsetX,
     viewportOffsetY,
   } = event.data;
+  const topLeftX = topLeft.x;
+  const topLeftY = topLeft.y;
+  const bottomRightX = bottomRight.x;
+  const bottomRightY = bottomRight.y;
   const pixels = generateMandelbrot(
     topLeftX,
     topLeftY,
