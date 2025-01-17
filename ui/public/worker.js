@@ -8,6 +8,8 @@ onmessage = (event) => {
     bottomRightY,
     viewportHeight,
     viewportWidth,
+    viewportOffsetX,
+    viewportOffsetY,
   } = event.data;
   const pixels = generateMandelbrot(
     topLeftX,
@@ -17,7 +19,17 @@ onmessage = (event) => {
     viewportHeight,
     viewportWidth
   );
-  self.postMessage(pixels);
+  self.postMessage({
+    topLeftX,
+    topLeftY,
+    bottomRightX,
+    bottomRightY,
+    viewportHeight,
+    viewportWidth,
+    viewportOffsetX,
+    viewportOffsetY,
+    pixels,
+  });
 };
 
 const PALETTE = [0, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120];

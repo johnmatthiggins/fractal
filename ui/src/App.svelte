@@ -91,6 +91,8 @@
       bottomRightX: topLeftX + Math.abs(bottomRightX - topLeftX),
       viewportHeight: Number(viewportHeight) / 2,
       viewportWidth: Number(viewportWidth) / 2,
+      viewportOffsetX: 0,
+      viewportOffsetY: 0,
     };
     const topRightChunk = {
       topLeftX: topLeftX + Math.abs(bottomRightX - topLeftX),
@@ -99,6 +101,8 @@
       bottomRightX,
       viewportHeight: Number(viewportHeight) / 2,
       viewportWidth: Number(viewportWidth) / 2,
+      viewportOffsetX: Number(viewportWidth) / 2,
+      viewportOffsetY: 0,
     };
     const bottomLeftChunk = {
       topLeftX,
@@ -107,6 +111,8 @@
       bottomRightX: topLeftX + Math.abs(bottomRightX - topLeftX),
       viewportHeight: viewportHeight / 2,
       viewportWidth: viewportWidth / 2,
+      viewportOffsetX: 0,
+      viewportOffsetY: Number(viewportHeight) / 2,
     };
     const bottomRightChunk = {
       topLeftX: topLeftX + Math.abs(bottomRightX - topLeftX),
@@ -115,6 +121,8 @@
       bottomRightX,
       viewportHeight: viewportHeight / 2,
       viewportWidth: viewportWidth / 2,
+      viewportOffsetX: Number(viewportWidth) / 2,
+      viewportOffsetY: Number(viewportHeight) / 2,
     };
     return [topLeftChunk, topRightChunk, bottomLeftChunk, bottomRightChunk];
   }
@@ -129,24 +137,28 @@
       });
       workers.forEach((worker) => {
         worker.onmessage = (event) => {
-          if (Array.isArray(event.data)) {
-            const pixels = event.data;
+          if (event.data.topLeftX) {
+            const { pixels } = event.data;
             console.log(pixels);
             const element = document.querySelector('#fractal-canvas');
             const context = element.getContext('2d');
 
-            context.reset();
+            const iStart = event.data.viewportOffsetX;
+            const iEnd = event.data.viewportOffsetX + event.data.viewportWidth;
 
-            // for (let i = 0; i < height(); i += 1) {
-            //   for (let j = 0; j < width(); j += 1) {
-            //     const byte = pixels[j + (i * width())];
-            //     if (byte > 0) {
-            //       const colorValue = transformByteToShade(byte);
-            //       context.fillStyle = colorValue;
-            //       context.fillRect(j, i, 1, 1);
-            //     }
-            //   }
-            // }
+            const jEnd = event.data.viewportOffsetY;
+            const jStart = event.data.viewportOffsetY + event.data.viewportHeight;
+
+            for (let i = 0; i < event.data.viewportHeight; i += 1) {
+              for (let j = 0; j < event.data.viewportWidth; j += 1) {
+                const byte = pixels[j + (i * width())];
+                if (byte > 0) {
+                  const colorValue = transformByteToShade(byte);
+                  context.fillStyle = colorValue;
+                  context.fillRect(j + event.data.viewportOffsetX, i + event.data.viewportOffsetY, 1, 1);
+                }
+              }
+            }
           } else {
             console.log(event.data);
           }
