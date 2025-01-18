@@ -3,9 +3,12 @@ function getPartitions(
   segmentCount: number,
   topLeft: Point,
   bottomRight: Point,
-  viewportDim: ViewportDimensions,
-  spaceDim: SpaceDimensions
+  viewportDim: ViewportDimensions
 ): Array<Partition> {
+  const spaceDim = {
+    width: Math.abs(topLeft.x - bottomRight.x),
+    height: Math.abs(topLeft.y - bottomRight.y),
+  };
   const size = Math.sqrt(segmentCount);
 
   const partitionSpaceWidth = spaceDim.width / size;
@@ -34,10 +37,6 @@ function getPartitions(
         bottomRight: partitionSpaceBottomRight,
       };
 
-      const viewportSegment = {
-        topLeft: partitionViewportTopLeft,
-        bottomRight: partitionViewportBottomRight,
-      };
       const partitionViewportTopLeft: Point = {
         x: partitionViewportWidth * i,
         y: partitionViewportHeight * j,
@@ -46,6 +45,10 @@ function getPartitions(
         x: partitionViewportWidth * (i + 1),
         y: partitionViewportHeight * (j + 1),
       }
+      const viewportSegment = {
+        topLeft: partitionViewportTopLeft,
+        bottomRight: partitionViewportBottomRight,
+      };
 
       const newPartition = {
         spaceSegment,
@@ -57,3 +60,5 @@ function getPartitions(
   }
   return partitions;
 }
+
+export default getPartitions;

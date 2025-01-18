@@ -4,15 +4,17 @@ onmessage = (event) => {
   const {
     topLeft,
     bottomRight,
-    viewportHeight,
-    viewportWidth,
-    viewportOffsetX,
-    viewportOffsetY,
+    viewportTopLeft,
+    viewportBottomRight,
   } = event.data;
   const topLeftX = topLeft.x;
   const topLeftY = topLeft.y;
   const bottomRightX = bottomRight.x;
   const bottomRightY = bottomRight.y;
+
+  const viewportHeight = Math.abs(viewportTopLeft.y - viewportBottomRight.y);
+  const viewportWidth = Math.abs(viewportTopLeft.x - viewportBottomRight.x);
+
   const pixels = generateMandelbrot(
     topLeftX,
     topLeftY,
@@ -22,14 +24,8 @@ onmessage = (event) => {
     viewportWidth
   );
   self.postMessage({
-    topLeftX,
-    topLeftY,
-    bottomRightX,
-    bottomRightY,
-    viewportHeight,
-    viewportWidth,
-    viewportOffsetX,
-    viewportOffsetY,
+    viewportTopLeft,
+    viewportBottomRight,
     pixels,
   });
 };
