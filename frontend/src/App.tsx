@@ -1,5 +1,4 @@
 import { createSignal, createEffect } from "solid-js";
-import { generate_mandelbrot } from '../../mandelbrot/pkg/mandelbrot.js';
 import './App.css'
 
 function transformByteToShade(byte: number): string {
@@ -33,36 +32,54 @@ function App() {
   const [bottomRightX, setBottomRightX] = createSignal(defaultBottomRightX);
   const [bottomRightY, setBottomRightY] = createSignal(defaultBottomRightY);
 
+  const [worker, setWorker] = createSignal(new Worker("worker.js"));
+
   createEffect(() => {
-    const pixels = generate_mandelbrot(
-      topLeftX(),
-      topLeftY(),
-      bottomRightX(),
-      bottomRightY(),
-      height(),
-      width()
-    );
+    const adjustedHeight = height() * 2;
+    const adjustedWidth = width() * 2;
+    const message = {
+      topLeft: { x: topLeftX(), y: topLeftY() },
+      bottomRight: { x: bottomRightX(), y: bottomRightY() },
+      viewportHeight: adjustedHeight,
+      viewportWidth: adjustedWidth,
+      viewportOffsetX: 0,
+      viewportOffsetY: 0,
+    };
 
-    const canvas = document.getElementById('fractal-canvas');
-    canvas.width = width();
-    canvas.height = height();
-
-    const context = canvas.getContext("2d");
-
-    for (let i = 0; i < height(); i++) {
-      for (let j = 0; j < width(); j++) {
-        const byte = pixels[j + (i * width())];
-        if (byte > 0) {
-          const colorValue = transformByteToShade(byte);
-          context.fillStyle = colorValue;
-          context.fillRect(j, i, 1, 1);
-        }
-      }
+    if (!worker().onerror) {
+      worker().onerror = (error) => {
+        console.error(error);
+      };
     }
+    if (!worker().onmessage) {
+      worker().onmessage = (event) => {
+        console.log(event);
+        const pixels = event.data.pixels;
+        const canvas = document.getElementById('fractal-canvas');
+        const adjustedHeight = height() * 2;
+        const adjustedWidth = width() * 2;
+        canvas.width = adjustedWidth;
+        canvas.height = adjustedHeight;
+
+        const context = canvas.getContext("2d");
+
+        for (let i = 0; i < adjustedHeight; i++) {
+          for (let j = 0; j < adjustedWidth; j++) {
+            const byte = pixels[j + (i * width() * 2)];
+            if (byte > 0) {
+              const colorValue = transformByteToShade(byte);
+              context.fillStyle = colorValue;
+              context.fillRect(j, i, 1, 1);
+            }
+          }
+        }
+      };
+    }
+    worker().postMessage(message);
   });
   return (
     <div>
-      <canvas id="fractal-canvas"></canvas>
+      <canvas id="fractal-canvas" class="w-full h-full"></canvas>
     </div>
   );
 }
