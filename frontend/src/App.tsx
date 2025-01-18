@@ -16,11 +16,11 @@ function App() {
   const defaultBottomRightY = -1;
 
   const height = () => {
-    return window.innerHeight * 2;
+    return window.innerHeight;
   };
   const width = () => {
     // return preferredWidth;
-    return window.innerWidth * 2;
+    return window.innerWidth;
     // const ratio =
     //   Math.abs(defaultBottomRightX - defaultTopLeftX) /
     //   Math.abs(defaultBottomRightY - defaultTopLeftY);
@@ -34,9 +34,17 @@ function App() {
 
   const [worker, setWorker] = createSignal(new Worker("worker.js"));
 
+  function getCanvas(): HTMLCanvasElement {
+    const canvas: HTMLCanvasElement | null = document.getElementById('fractal-canvas') as HTMLCanvasElement | null;
+    if (!canvas) {
+      throw new Error("Canvas does not exist!");
+    }
+    return canvas;
+  }
+
   createEffect(() => {
-    const adjustedHeight = height() * 2;
-    const adjustedWidth = width() * 2;
+    const adjustedHeight = height();
+    const adjustedWidth = width();
     const message = {
       topLeft: { x: topLeftX(), y: topLeftY() },
       bottomRight: { x: bottomRightX(), y: bottomRightY() },
@@ -53,21 +61,22 @@ function App() {
     }
     if (!worker().onmessage) {
       worker().onmessage = (event) => {
-        console.log(event);
-        const pixels = event.data.pixels;
-        const canvas = document.getElementById('fractal-canvas');
-        const adjustedHeight = height() * 2;
-        const adjustedWidth = width() * 2;
+        const pixels: Array<number> = event.data.pixels;
+        const canvas: HTMLCanvasElement = getCanvas();
+        const adjustedHeight: number = height();
+        const adjustedWidth: number = width();
         canvas.width = adjustedWidth;
         canvas.height = adjustedHeight;
 
-        const context = canvas.getContext("2d");
-
+        const context: CanvasRenderingContext2D | null = canvas.getContext("2d");
+        if (!context) {
+          throw new Error("Canvas rendering context could not be created");
+        }
         for (let i = 0; i < adjustedHeight; i++) {
           for (let j = 0; j < adjustedWidth; j++) {
-            const byte = pixels[j + (i * width() * 2)];
+            const byte = pixels[j + (i * width())];
             if (byte > 0) {
-              const colorValue = transformByteToShade(byte);
+              const colorValue: string = transformByteToShade(byte);
               context.fillStyle = colorValue;
               context.fillRect(j, i, 1, 1);
             }
