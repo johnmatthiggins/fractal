@@ -5,32 +5,24 @@
   import { onMount } from 'svelte';
   import { generate_mandelbrot } from '../../mandelbrot/pkg/mandelbrot.js';
 
-  // WE need an interface that looks like this:
-  // - top left point (complex/cartesian)
-  // - bottom right point (complex/cartesian)
-  // - viewport height (pixels)
-  // - viewport width (pixels)
-  // The output will be a grid of boolean values.
-  // Maybe encode it inside a byte array?
-
-  const screenHeight = () => {
+  function screenHeight() {
     return window.innerHeight * 3;
-  };
-  const screenWidth = () => {
+  }
+  function screenWidth() {
     return window.innerWidth * 3;
-  };
+  }
 
   const size = $derived(() => {
     return Math.min(screenWidth(), screenHeight()) * 3;
   });
 
-  const transformByteToShade = (byte) => {
+  function transformByteToShade(byte) {
     if (byte === 0) {
       return '#000000';
     }
     const b = Math.floor(byte * (255 / 150)).toString(16).padStart('0', 2);
     return `#${b}${b}${b}`;
-  };
+  }
 
   const defaultTopLeftX = -2;
   const defaultTopLeftY = 1;
@@ -44,18 +36,17 @@
 
   let zoomRange = $state(1);
 
-  const zoom = (magnitude) => {
+  function zoom(magnitude) {
     topLeftX = defaultTopLeftX * magnitude;
     topLeftY = defaultTopLeftY * magnitude;
     bottomRightX = defaultBottomRightX * magnitude;
     bottomRightY = defaultBottomRightY * magnitude;
-  };
+  }
 
   const preferredHeight = 1000 * 2;
   const preferredWidth = 1440 * 2;
 
   const height = $derived(() => {
-
     return window.innerHeight * 2;
   });
   const width = $derived(() => {
@@ -68,17 +59,15 @@
   });
 
   let insideCanvas = $state(false);
-  const handleMouseEnter = () => {
+  function handleMouseEnter() {
     insideCanvas = true;
-    console.log('left canvas');
-  };
-  const handleMouseMove = (event) => {
+  }
+  function handleMouseMove(event) {
     // console.log(event);
-  };
-  const handleMouseLeave = (event) => {
+  }
+  function handleMouseLeave(event) {
     insideCanvas = false;
-    console.log('entered canvas');
-  };
+  }
 
   // chunk count must be a power of 2
   function splitChunks(
@@ -106,7 +95,7 @@
         };
         const squareBottomRight = {
           x: squareTopLeft.x + squareSectionHeight,
-          y: squareTopLeft.y - squareSectionWidth,
+          y: squareTopLeft.y + squareSectionWidth,
         };
         const newSquare = {
           topLeft: squareTopLeft,
@@ -133,9 +122,9 @@
       });
       workers.forEach((worker) => {
         worker.onmessage = (event) => {
+          console.log(event.data);
           if (event.data.topLeftX) {
             const { pixels } = event.data;
-            console.log(pixels);
             const element = document.querySelector('#fractal-canvas');
             const context = element.getContext('2d');
 
@@ -155,8 +144,6 @@
                 }
               }
             }
-          } else {
-            console.log(event.data);
           }
         };
       });
@@ -181,10 +168,10 @@
     }
   });
 
-  const canvasPosition = () => {
+  function canvasPosition() {
     const {x, y} = canvasElement.getBoundingClientRect();
     return {x, y}
-  };
+  }
   // $effect(() => {
   //   const canvas = document.getElementById('fractal-canvas');
   //   canvas.width = width();
