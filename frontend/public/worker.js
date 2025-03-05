@@ -7,13 +7,13 @@ onmessage = (event) => {
     viewportTopLeft,
     viewportBottomRight,
   } = event.data;
-  const topLeftX = topLeft.x;
-  const topLeftY = topLeft.y;
-  const bottomRightX = bottomRight.x;
-  const bottomRightY = bottomRight.y;
+  const topLeftX = Math.floor(topLeft.x);
+  const topLeftY = Math.floor(topLeft.y);
+  const bottomRightX = Math.floor(bottomRight.x);
+  const bottomRightY = Math.floor(bottomRight.y);
 
-  const viewportHeight = Math.abs(viewportTopLeft.y - viewportBottomRight.y);
-  const viewportWidth = Math.abs(viewportTopLeft.x - viewportBottomRight.x);
+  const viewportHeight = Math.floor(Math.abs(viewportTopLeft.y - viewportBottomRight.y));
+  const viewportWidth = Math.floor(Math.abs(viewportTopLeft.x - viewportBottomRight.x));
 
   const pixels = generateMandelbrot(
     topLeftX,

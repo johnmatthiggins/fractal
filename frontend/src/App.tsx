@@ -45,14 +45,14 @@ function App() {
 
   createEffect(() => {
     const canvas = getCanvas();
-    canvas.height = height();
-    canvas.width = width();
+    canvas.height = height() * 2;
+    canvas.width = width() * 2;
 
     const partitions = getPartitions(
       4,
       { x: topLeftX(), y: topLeftY() },
       { x: bottomRightX(), y: bottomRightY() },
-      { height: height(), width: width() },
+      { height: height() * 2, width: width() * 2 },
     );
 
     const workers = [];
@@ -79,14 +79,14 @@ function App() {
         const canvas = getCanvas();
         const context = canvas.getContext("2d");
         const viewportWidth = Math.abs(viewportTopLeft.x - viewportBottomRight.x);
+        const viewportHeight = Math.abs(viewportTopLeft.y - viewportBottomRight.y);
 
         for (let i = 0; i < pixels.length; i++) {
-          const x = viewportWidth * i;
-          const y = i % viewportWidth;
+          const x = Math.floor(viewportTopLeft.x + Math.floor(i / viewportWidth));
+          const y = viewportTopLeft.y + (i % Math.floor(viewportHeight));
           const byte = pixels[i];
           const colorValue: string = transformByteToShade(byte);
           context.fillStyle = colorValue;
-          // context.fillStyle = "blue";
           context.fillRect(x, y, 1, 1);
         }
       };
